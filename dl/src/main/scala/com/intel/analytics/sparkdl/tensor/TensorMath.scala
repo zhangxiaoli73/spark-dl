@@ -460,4 +460,6 @@ trait TensorMath[T] {
   def abs(x: Tensor[T]): Tensor[T]
 
   def norm(value: T, dim: Int): Tensor[T]
+
+  def norm(): T
 }
