@@ -458,6 +458,12 @@ trait TensorMath[T] {
   def abs(x: Tensor[T]): Tensor[T]
 
   /**
+   * Implements >= operator comparing each element in a with b
+   * @param x
+   * @param value
+   * @return
+   */
+  /**
    * Implements > operator comparing each element in x with y
    *
    * @param x
@@ -531,6 +537,17 @@ trait TensorMath[T] {
    * @return
    */
   def indexAdd(dim: Int, index: Tensor[T], y: Tensor[T]): Tensor[T]
+
+  /**
+   * Accumulate the elements of tensor into the original tensor by adding to the indices
+   * in the order given in index. The shape of tensor must exactly match the elements indexed
+   * or an error will be thrown.
+   * @param dim
+   * @param index
+   * @param y
+   * @return
+   */
+  def index(dim: Int, index: Tensor[T], y: Tensor[T]): Tensor[T]
 
   /**
    * stores the element-wise maximum of x and y in x.
