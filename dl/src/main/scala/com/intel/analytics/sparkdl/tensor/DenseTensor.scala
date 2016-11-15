@@ -929,10 +929,31 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def cdiv(x: Tensor[T], y: Tensor[T]): Tensor[T] = DenseTensorMath.cdiv(this, x, y)
 
+  /**
+   * stores the element-wise maximum of x and y in x.
+   * x.cmax(y) = max(x, y)
+   *
+   * @param y tensor
+   * @return current tensor
+   */
   override def cmax(y: Tensor[T]): Tensor[T] = DenseTensorMath.cmax(this, this, y)
 
+  /**
+   * stores the minima of each element in x and v in x.
+   * x.cmax(v) = max(x, v)
+   *
+   * @param value Double
+   * @return current tensor
+   */
   override def cmax(value: Double): Tensor[T] = DenseTensorMath.cmax(this, this, value)
 
+  /**
+   * stores the element-wise maximum of x and y in z.
+   * z.cmax(x, y) means z = max(x, y)
+   *
+   * @param x tensor
+   * @param y tensor
+   */
   override def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T] = DenseTensorMath.cmax(this, x, y)
 
   override def mul(x: Tensor[T], value: T): Tensor[T] = DenseTensorMath.mul(this, x, value)
@@ -1366,12 +1387,6 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   /**
-   * Implements >= operator comparing each element in a with b
-   * @param x
-   * @param value
-   * @return
-   */
-  /**
    * Fills the masked elements of itself with value val
    *
    * @param mask
@@ -1522,6 +1537,12 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
+  /**
+   * Implements == operator comparing each element in a with b
+   * @param x
+   * @param value
+   * @return
+   */
   override def eq(x: Tensor[T], value: T): Tensor[T] = {
     // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc4[T] {
@@ -1537,6 +1558,12 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
+  /**
+   * Implements >= operator comparing each element in x with value
+   * @param x
+   * @param value
+   * @return
+   */
   override def ge(x: Tensor[T], value: Double): Tensor[T] = {
     // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc4[T] {

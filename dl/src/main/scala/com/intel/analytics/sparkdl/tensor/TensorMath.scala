@@ -458,12 +458,6 @@ trait TensorMath[T] {
   def abs(x: Tensor[T]): Tensor[T]
 
   /**
-   * Implements >= operator comparing each element in a with b
-   * @param x
-   * @param value
-   * @return
-   */
-  /**
    * Implements > operator comparing each element in x with y
    *
    * @param x
@@ -499,6 +493,14 @@ trait TensorMath[T] {
   def eq(x: Tensor[T], y: T): Tensor[T]
 
   /**
+   * Implements >= operator comparing each element in x with value
+   * @param x
+   * @param value
+   * @return
+   */
+  def ge(x: Tensor[T], value: Double): Tensor[T]
+
+  /**
    * Fills the masked elements of itself with value val
    *
    * @param mask
@@ -524,8 +526,6 @@ trait TensorMath[T] {
    * @return current tensor reference
    */
   def maskedSelect(mask: Tensor[T], y: Tensor[T]): Tensor[T]
-
-  def ge(x: Tensor[T], value: Double): Tensor[T]
 
   /**
    * Accumulate the elements of tensor into the original tensor by adding to the indices
