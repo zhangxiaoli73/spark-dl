@@ -167,6 +167,7 @@ object File {
           val result = className match {
             case "torch.FloatTensor" => readFloatTensor(rawData, objects)
             case "torch.DoubleTensor" => readDoubleTensor(rawData, objects)
+            case "torch.ByteTensor" => readDoubleTensor(rawData, objects)
             case "nn.Sequential" => readSequentialModule(rawData, objects)
             case "nn.SpatialConvolutionMM" => readSpatialConvolution(rawData, objects)
             case "nn.SpatialConvolution" => readSpatialConvolution(rawData, objects)
@@ -183,6 +184,7 @@ object File {
             case "torch.DoubleStorage" => readDoubleStorage(rawData)
             case "torch.FloatStorage" => readFloatStorage(rawData)
             case "torch.LongStorage" => readLongStorage(rawData)
+            case "torch.ByteStorage" => readByteStorage(rawData)
             case "nn.SpatialConvolutionMap" => readSpatialConvolutionMap(rawData, objects)
             case "nn.Tanh" => readTanh(rawData, objects)
             case "nn.Reshape" => readReshape(rawData, objects)
@@ -663,7 +665,21 @@ object File {
     val data = new Array[Double](storageLength)
     var i = 0
     while (i < storageLength) {
-      data(i) = rawData.getDouble
+      val tmp = rawData
+      val tmp1 = rawData.getDouble
+      data(i) = tmp1
+      i += 1
+    }
+    Storage(data)
+  }
+
+  // Basic objects
+  private def readByteStorage(rawData: ByteBuffer): Storage[Byte] = {
+    val storageLength = rawData.getLong.toInt
+    val data = new Array[Byte](storageLength)
+    var i = 0
+    while (i < storageLength) {
+      data(i) = rawData.get
       i += 1
     }
     Storage(data)
@@ -776,7 +792,6 @@ object File {
     val storage = readObject(rawData, objects).asInstanceOf[Storage[Float]]
     Tensor(storage, offset, sizes, strides)
   }
-
   // Modules
   private def readSpatialMaxPooling(
     rawData: ByteBuffer, objects: Map[Int, Any]): SpatialMaxPooling[Double] = {

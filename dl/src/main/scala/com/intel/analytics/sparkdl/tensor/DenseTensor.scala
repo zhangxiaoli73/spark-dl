@@ -1644,6 +1644,51 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     }
     this
   }
+
+  /**
+   * y = torch.range(x, y) returns a Tensor of size floor((y - x) / step) + 1 with values from
+   * x to y with step step (default to 1).
+   * @param xmin
+   * @param xmax
+   * @param step
+   * @return
+   */
+  override def range(xmin: Double, xmax: Double, step: Int = 1): Tensor[T] = {
+    require((xmax >= xmin) && (step > 0),
+      "upper bound and larger bound incoherent with step sign")
+    val size = ((xmax-xmin)/ step + 1).toInt
+    if (this.nElement() != size) this.resize(size)
+    var i = 0
+    // TODO: the performance of contiguous tensor should be optimize
+    val func = new TensorFunc2[T] {
+      override def apply(data1: Array[T], offset1: Int): Unit = {
+        data1(offset1) = ev.fromType(xmin + i * step)
+        i += 1
+      }
+    }
+    DenseTensorApply.apply1[T](this, func)
+    this
+  }
+
+
+  override def scatter(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] = {
+    require(src.dim() == this.dim(), "Input tensor must have same dimensions as output tensor")
+    require(dim <= this.dim(), "Index dimension is out of bounds")
+    require(index.dim() == src.dim(), "Index tensor must have same dimensions as input tensor")
+    val elementsPerRow = index.size(dim)
+    // TODO: the performance of contiguous tensor should be optimize
+    DenseTensorDimApply.dimApply3[T](this, src, index, dim, (tdata, toffset, tstride,
+    tsize, vdata, voffset, vstride, vsize, idata, ioffset, istride, isize) => {
+       var i = 0
+       while (i < elementsPerRow) {
+        val idx = ev.toType[Int](idata(ioffset + i * istride))
+        require(idx >= 1 && idx <= this.size(dim))
+        tdata((idx - 1) * tstride + toffset) = vdata(i * vstride + voffset)
+        i += 1
+       }
+      })
+    this
+  }
 }
 
 object DenseTensor {

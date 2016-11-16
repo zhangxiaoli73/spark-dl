@@ -575,4 +575,16 @@ trait TensorMath[T] {
    * @return current tensor
    */
   def cmax(value: Double): Tensor[T]
+
+  def scatter(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T]
+
+  /**
+   * y = torch.range(x, y) returns a Tensor of size floor((y - x) / step) + 1 with values from
+   * x to y with step step (default to 1).
+   * @param xmin
+   * @param xmax
+   * @param step
+   * @return
+   */
+  def range(xmin: Double, xmax: Double, step: Int = 1): Tensor[T]
 }
