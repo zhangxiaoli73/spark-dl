@@ -69,6 +69,8 @@ class NarrowTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
     luaOutput1.size should be(outputData.size)
     luaOutput2.size should be(gradInputData.size)
 
+    val tmp = output.length()
+
     var i = 1
     while (i <= luaOutput1.size) {
       val val1 = luaOutput1.get(i.toDouble).getOrElse(null)

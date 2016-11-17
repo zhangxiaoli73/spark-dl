@@ -55,6 +55,18 @@ class MaskedSelectSpec extends FlatSpec with BeforeAndAfter with Matchers{
     gradOutput(Array(4)) = 17
     gradOutput(Array(5)) = 26
 
+    var m1 = Tensor[Double]()
+    var m2 = Tensor[Double]()
+    var resultMatrix = Tensor[Double]()
+    var batch = 1
+    while (batch <= 2) {
+      val m1 = input1.select(1, batch)
+      val m2 = input2.select(1, batch)
+      resultMatrix = input1.select(1, batch)
+      resultMatrix.mul(100)
+      batch += 1
+    }
+
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.MaskedSelect()\n" +
       "mask = torch.ByteTensor({{1, 0}, {0, 1}})\n" +
