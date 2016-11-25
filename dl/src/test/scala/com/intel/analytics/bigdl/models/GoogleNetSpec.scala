@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.models
 
 import com.intel.analytics.bigdl.example.GoogleNet
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, GradientChecker}
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.torch.TH
@@ -418,5 +418,25 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val gradInput = model.backward(input, gradOutputTest)
     gradInput should be equals gradInputTorch
     sgd.optimize(_ => (errTest, grad), weights, state, state)
+  }
+
+  "GoogleNet model in batch mode" should "be good in gradient check" in {
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
+    val model = GoogleNet.getModel[Double](1000, "googlenet")
+    model.zeroGradParameters()
+
+    val checker = new GradientChecker(1e-2, 1e-2)
+    checker.checkLayer(model, input) should be(true)
+  }
+
+  "GoogleNet+bn model in batch mode" should "be good in gradient check" in {
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
+    val model = GoogleNet.getModel[Double](1000, "googlenet-bn")
+    model.zeroGradParameters()
+
+    val checker = new GradientChecker(1e-2, 1e-3)
+    checker.checkLayer(model, input) should be(true)
+
+    println("done")
   }
 }

@@ -135,4 +135,12 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     println(output)
 
   }
+
+  "BatchNormalization module in batch mode" should "be good in gradient check" in {
+    val bn = new BatchNormalization[Double](3)
+    val input = Tensor[Double](3, 3).rand()
+
+    val checker = new GradientChecker(1e-1, 1e-5)
+    checker.checkLayer(bn, input) should be(true)
+  }
 }

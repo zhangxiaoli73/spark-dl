@@ -308,4 +308,24 @@ gradInput = model:backward(input, gradOutput)
     // println(s"outputAbs:$gradInputAbs")
     // (gradInputAbs < 1E-16) should be
   }
+
+  "AlexNet model in batch mode" should "be good in gradient check" in {
+    val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
+    val model = AlexNet_OWT[Double](1000, false, true)
+    model.zeroGradParameters()
+
+    val checker = new GradientChecker(1e-2, 1e-2)
+    checker.checkLayer(model, input) should be(true)
+  }
+
+  "AlexNet model in batch mode" should "be good in graident check with weights check" in {
+    val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
+    val seed = 100
+    RNG.setSeed(seed)
+    val model = AlexNet_OWT[Double](1000, false, true)
+    model.zeroGradParameters()
+
+    val checker = new GradientChecker(1e-2, 1e-2)
+    checker.checkWeight(model, input) should be(true)
+  }
 }

@@ -17,8 +17,8 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
@@ -27,7 +27,8 @@ class GradientChecker(stepSize: Double, threshold: Double) {
   def checkLayer[T: ClassTag](
     layer: Module[Tensor[T], Tensor[T], T],
     input: Tensor[T],
-    epsilon: Double = 0.001)
+    epsilon: Double = 0.001,
+    num: Int = -1)
     (implicit ev: TensorNumeric[T]): Boolean = {
     val gradOutput = lossAndGradient(layer.updateOutput(input))._2
     val computedGrad = layer.updateGradInput(input, gradOutput)
@@ -38,8 +39,44 @@ class GradientChecker(stepSize: Double, threshold: Double) {
     perturbation.resize(input.nElement())
     var result = true
     var i = 1
-    while (i <= input.nElement()) {
+    while (i <= 10) { //input.nElement()) { //ev.min(100,input.nElement()) {
       val curValue = perturbation.valueAt(i)
+      perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) + stepSize))
+      val positiveLoss = lossAndGradient(layer.updateOutput(input))._1
+      perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) - stepSize))
+      val negativeLoss = lossAndGradient(layer.updateOutput(input))._1
+      val estimatedGradient = (positiveLoss - negativeLoss) / stepSize / 2.0
+
+      val tmp = math.abs(estimatedGradient - ev.toType[Double](computedGrad.valueAt(i)))
+      result = result & (math.abs(estimatedGradient -
+        ev.toType[Double](computedGrad.valueAt(i))) < epsilon)
+      perturbation.setValue(i, curValue)
+      i += 1
+    }
+
+    result
+  }
+
+  def checkWeight[T: ClassTag](
+    layer: Module[Tensor[T], Tensor[T], T],
+    input: Tensor[T],
+    epsilon: Double = 0.001,
+    num: Int = -1)
+  (implicit ev: TensorNumeric[T]): Boolean = {
+    val gradOutput = lossAndGradient(layer.updateOutput(input))._2
+    val computedGrad = layer.updateGradInput(input, gradOutput)
+    computedGrad.resize(Array(computedGrad.nElement()))
+
+    val weights = layer.getParameters()._1
+
+    val perturbation = Tensor[T]()
+    perturbation.set(weights)
+    perturbation.resize(weights.nElement())
+    var result = true
+    var i = 1
+    println(weights.nElement())
+    while (i <= 100){ //weights.nElement()) { //input.nElement()) { //ev.min(100,input.nElement()) {
+    val curValue = perturbation.valueAt(i)
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) + stepSize))
       val positiveLoss = lossAndGradient(layer.updateOutput(input))._1
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) - stepSize))

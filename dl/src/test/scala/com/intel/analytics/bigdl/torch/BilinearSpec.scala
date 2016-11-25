@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.torch
 
 
 
-import com.intel.analytics.bigdl.nn.Bilinear
+import com.intel.analytics.bigdl.nn.{Bilinear, Utils}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.Table
@@ -45,6 +45,16 @@ class BilinearSpec extends FlatSpec with BeforeAndAfter with Matchers{
     var input = new Table()
     input(1.toDouble) = input1
     input(2.toDouble) = input2
+
+    //test
+    var input22 = new Table()
+    input22(1.0) = gradOutput
+    input22(2.0) = input
+
+    var input33 = new Table()
+
+    Utils.recursiveResizeAs[Double](input33, input22)
+    //done
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.Bilinear(5,3,2)\n" +

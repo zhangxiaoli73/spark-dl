@@ -81,12 +81,13 @@ object GoogleNet {
           if (config[Table](4)[Int](2) != 0) {
             pool.add(new SpatialConvolution[D](inputSize, config[Table](4)[Int](2), 1, 1, 1, 1))
             pool.add(new SpatialBatchNormalization(config[Table](4)(2), 1e-3))
-            pool.add(new ReLU[D]())
+            pool.add(new ReLU[D](true))
           }
           concat.add(pool)
 
           concat
         }
+
         val features = new Sequential[Tensor[D], Tensor[D], D]
         features.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3))
         features.add(new SpatialBatchNormalization(64, 1e-3))
