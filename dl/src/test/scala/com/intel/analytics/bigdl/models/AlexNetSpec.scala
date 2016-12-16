@@ -17,10 +17,9 @@
 
 package com.intel.analytics.bigdl.models
 
-import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
+import com.intel.analytics.bigdl.example.loadmodel
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor._
@@ -44,7 +43,8 @@ class AlexNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val seed = 100
     RNG.setSeed(seed)
-    val model = imagenet.AlexNet_OWT(1000, false, true)
+
+    val model = loadmodel.AlexNet_OWT(1000, false, true)
     model.zeroGradParameters()
 
 
@@ -202,7 +202,7 @@ gradInput = model.gradInput
 
     val seed = 100
     RNG.setSeed(seed)
-    val model = AlexNet_OWT(1000, false, true)
+    val model = loadmodel.AlexNet_OWT(1000, false, true)
     model.zeroGradParameters()
 
 
