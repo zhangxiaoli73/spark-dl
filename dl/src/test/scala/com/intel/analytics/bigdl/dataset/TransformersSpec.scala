@@ -431,7 +431,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
   "RGBImage To SeqFile" should "be good" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
-    val pathToImage = LocalImgReader(BGRImage.NO_SCALE)
+    val pathToImage = LocalImgReaderSeq(BGRImage.NO_SCALE)
     val dataSet = DataSet.ImageFolder.paths(
       Paths.get(processPath(resource.getPath()))
     )
@@ -460,10 +460,10 @@ class TransformersSpec extends FlatSpec with Matchers {
     val readIter = readPipeline.toLocal().data(train = false)
     readIter.zip((dataSet -> pathToImage).toLocal().data(train = false))
       .foreach { case (l, r) =>
-      l.label() should be(r.label())
-      l.width() should be(r.width())
-      l.height() should be(r.height())
-      l.content.zip(r.content).foreach(d => d._1 should be(d._2))
+      l.label() should be(r._1.label())
+      l.width() should be(r._1.width())
+      l.height() should be(r._1.height())
+      l.content.zip(r._1.content).foreach(d => d._1 should be(d._2))
       count += 1
     }
 

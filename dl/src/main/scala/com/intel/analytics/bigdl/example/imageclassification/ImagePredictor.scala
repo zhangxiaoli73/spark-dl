@@ -18,14 +18,14 @@ package com.intel.analytics.bigdl.example.imageclassification
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.dataset.image.{LocalImageFiles, _}
+import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.example.imageclassification.MlUtils._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.{DLClassifier => SparkDLClassifier}
 import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.ml.{DLClassifier => SparkDLClassifier}
 import org.apache.spark.sql.SQLContext
 
 /**
@@ -63,10 +63,13 @@ object ImagePredictor {
         Array(param.batchSize, 3, imageSize, imageSize))
 
       // load image set
-      val paths = LocalImageFiles.readPaths(Paths.get(param.folder), hasLabel = false)
-      val imageSet = imagesLoad(paths, 256)
+      val valRDD = if (param.isHdfs) {
+        imagesLoadSeq(param.folder, sc, param.classNum)
+      } else {
+        val paths = LocalImageFiles.readPaths(Paths.get(param.folder), hasLabel = false)
+        sc.parallelize(imagesLoad(paths, 256)).repartition(partitionNum)
+      }
 
-      val valRDD = sc.parallelize(imageSet).repartition(partitionNum)
       val transf = RowToByteRecords() ->
           BytesToBGRImg() ->
           BGRImgCropper(imageSize, imageSize) ->
@@ -78,7 +81,6 @@ object ImagePredictor {
       valTrans.transform(valDF, paramsTrans)
           .select("imageName", "predict")
           .show(param.showNum)
-
       sc.stop()
     })
   }
