@@ -17,20 +17,15 @@
 
 package com.intel.analytics.bigdl.dataset
 
-import java.awt.color.ColorSpace
-import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.image.LocalImageFiles._
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.io.{SequenceFile, Text}
-import org.apache.hadoop.io.SequenceFile.Reader
+import org.apache.hadoop.io.Text
 import org.apache.log4j.Logger
-import org.apache.spark.{Partition, SparkContext}
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.reflect._
@@ -400,6 +395,20 @@ object DataSet {
       }
     }
 
+    def getValue(data: Text, dataType: String): String = {
+      val dataArr = data.toString.split("\n")
+      if (dataArr.length == 1) {
+        require(dataType == "label")
+        dataArr(0)
+      } else {
+        dataType match {
+          case "name" => dataArr(0)
+          case "label" => dataArr(1)
+          case _ => throw new IllegalArgumentException(s"${dataType}")
+        }
+      }
+    }
+
     /**
      * Extract hadoop sequence files from an HDFS path
      * @param url
@@ -409,7 +418,7 @@ object DataSet {
      */
     def files(url: String, sc: SparkContext, classNum: Int): DistributedDataSet[ByteRecord] = {
       val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text]).map(image => {
-        ByteRecord(image._2.copyBytes(), image._1.toString.toFloat)
+        ByteRecord(image._2.copyBytes(), getValue(image._1, "label").toFloat)
       }).filter(_.label <= classNum)
 
       rdd[ByteRecord](rawData)
